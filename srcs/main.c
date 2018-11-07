@@ -6,20 +6,29 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/05 08:17:24 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/06 12:51:29 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/07 11:15:05 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <dirent.h>
 #include <stdio.h> //
+#include <errno.h>
 #include <stdlib.h>
 #include "ft_ls.h"
 
-typedef struct		s_options
+void	print_dir(DIR *dir, t_options *ops)
 {
-	int		a;
-	int		ur;
-}					t_options;
+	struct dirent	*runner;
+
+	while ((runner = readdir(dir)))
+	{
+		if (ops->a)
+			printf("%s\n", runner->d_name);
+		else if (runner->d_name[0] != '.')
+			printf("%s\n", runner->d_name);
+	}
+}
+
 
 int		set_option(void *container, char option)
 {
@@ -39,130 +48,99 @@ int		set_option(void *container, char option)
 	return (0);
 }
 
-void	list_it(DIR *dir, t_options *ops, char **argv, int argc)
+void	list_it(t_options *ops, t_list *dirs)
 {
-	int				i;
-	struct dirent	*runner;
+	DIR	*dir;
 
-	i = 0;
-	printf("extra args: %d\n", argc);
-	while (i < argc)
+	while (dirs)
 	{
-		if ((dir = opendir(argv[i])))
+		if ((dir = opendir((char *)dirs->content)))
 		{
-			printf("%s:\n", argv[i]);
-			while ((runner = readdir(dir)))
-			{
-				if (ops->a)
-					printf("%s\n", runner->d_name);
-				else if (runner->d_name[0] != '.')
-					printf("%s\n", runner->d_name);
-			}
+			printf("%s:\n", (char *)dirs->content);
+			print_dir(dir, ops);
 			if (dir)
 				closedir(dir);
 		}
 		else
 		{
-			printf("BAD !\n");
+			printf("CAN'T OPEN !\n");
 			exit(100); ///////////
 		}
 		printf("\n");
+		dirs = dirs->next;
+	}
+}
+
+void	init_files(t_list **files, int argc, char **argv)
+{
+	int i;
+
+	i = 0;
+	while (i < argc)
+	{
+		if (ft_isfile(argv[i]))
+			ft_lstadd(files, ft_lstnew(argv[i], ft_strlen(argv[i])));
 		++i;
 	}
 }
 
-void	print_data(t_tree *tree)
+void	init_dirs(t_list **dirs, int argc, char **argv)
 {
-	DIR *dir;
-	struct dirent *runner;
-
-	printf("\ntry to open %s\n", (char *)tree->content);
-	if ((dir = opendir((char *)tree->content)))
-	{
-		printf("opened %s\n", (char *)tree->content);
-		while ((runner = readdir(dir)))
-			printf("%s\n", runner->d_name);
-		if (dir)
-		{
-			printf("closed %s\n", (char *)tree->content);
-			closedir(dir);
-		}
-	}
-	else
-		printf("CAN'T OPEN %s\n", (char *)tree->content);
-}
-
-void	inorder_tree_traversal(t_tree *level)
-{
-	while (level)
-	{
-		print_data(level);
-		inorder_tree_traversal(level->kids);
-		level = level->siblings;
-	}
-}
-
-void	build_tree(DIR *dir, t_options *ops, t_tree *level)
-{
-	int				i;
-	char			*new_path;
-	struct dirent	*runner;
+	int i;
 
 	i = 0;
-	while (level)
+	while (i < argc)
 	{
-		//printf("try to open %s\n", (char *)level->content);
-		if ((dir = opendir((char *)level->content)))
-		{
-			//printf("opened %s\n", (char *)level->content);
-			while ((runner = readdir(dir)))
-			{
-				if (runner->d_type == DT_DIR && runner->d_name[0] != '.')
-				{
-					new_path = ft_strjoin((char *)level->content, "/");
-					ft_strconnect(&new_path, runner->d_name, 1);
-					//printf("find new_path: %s\n", new_path);
-					ft_treeadd_kid(&level,
-							ft_treenew(new_path, ft_strlen(new_path) + 1));
-					ft_strdel(&new_path);
-				}
-			}
-			if (dir)
-			{
-				//printf("closed %s\n", (char *)level->content);
-				closedir(dir);
-			}
-		}
-		else
-		{
-			//printf("CAN'T OPEN %s\n", (char *)level->content);
-			//exit(100); ///////////
-		}
-		build_tree(dir, ops, level->kids);
-		level = level->siblings;
+		if (ft_isdir(argv[i]))
+			ft_lstadd(dirs, ft_lstnew(argv[i], ft_strlen(argv[i])));
+		++i;
 	}
-	//printf("\n");
-	++i;
+}
+
+void	check_for_garbage(int argc, char **argv)
+{
+	int	i;
+
+	i = 0;
+	while (i < argc)
+	{
+		if (ft_get_fs_type(argv[i]) == 2)
+			printf("ft_ls: %s: No such file or directory\n", argv[i]);
+		++i;
+	}
+}
+
+void	print_files(t_list *files)
+{
+	while (files)
+	{
+		printf("%s\n", (char *)files->content);
+		files = files->next;
+	}
+}
+
+void	ft_delbasic(void *content, size_t content_size)
+{
+	content_size = 0;
+	free(content);
 }
 
 int		main(int argc, char **argv)
 {
-	DIR				*cur_dir;
 	char			*tmp;
 	t_options		ops;
 	int				pos;
 	int				vld;
+	t_list			*files;
+	t_list			*dirs;
 
 	vld = argc - 1;
-	cur_dir = NULL;
+	files = NULL;
+	dirs = NULL;
 	ft_bzero((void *)&ops, sizeof(t_options));
 	pos = ft_argsparser_ti(&argv[1], &vld, (void*)&ops, set_option);
-	printf("vld = %d\n", vld);
 	if (vld == 1 || ((pos >= argc - 1) && vld == 3))
-	{
-		printf("No dirs passed\n");
-		cur_dir = opendir(".");
-	}
+		ft_lstadd(&dirs, ft_lstnew(".", 2));
 	else if (vld == 0)
 	{
 		if (vld == 0)
@@ -178,18 +156,16 @@ int		main(int argc, char **argv)
 			return (43);
 		}
 	}
+	init_files(&files, argc - pos - 1, &argv[pos + 1]);
+	init_dirs(&dirs, argc - pos - 1, &argv[pos + 1]);
+	check_for_garbage(argc - pos - 1, &argv[pos + 1]);
+	print_files(files);
+	// Do something with files
 	if (ops.ur)
-	{
-		t_tree *tree;
-
-		while (++pos < argc)
-		{
-			tree = ft_treenew(argv[pos], ft_strlen(argv[pos]));
-			build_tree(cur_dir, &ops, tree);
-			inorder_tree_traversal(tree);
-		}
-	}
+		big_r(dirs, &ops);
 	else
-		list_it(cur_dir, &ops, &argv[pos + 1], argc - pos - 1);
+		list_it(&ops, dirs);
+	ft_lstdel(&dirs, ft_delbasic);
+	ft_lstdel(&files, ft_delbasic);
 	return (0);
 }
