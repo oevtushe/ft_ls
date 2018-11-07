@@ -6,7 +6,7 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/06 11:21:10 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/07 10:51:56 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/07 18:38:50 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,14 +26,16 @@ typedef struct			s_tree
 	struct s_tree		*kids;
 }						t_tree;
 
+// bitfield ?
 typedef struct			s_options
 {
 	int					a;
 	int					ur;
+	int					l;
 }						t_options;
 
 void		big_r(t_list *dirs, t_options *ops);
-void		print_dir(DIR *dir, t_options *ops);
+void		print_dir(DIR *dir, t_options *ops, char *cur_path);
 int			ft_get_fs_type(char *str);
 
 void		ft_treeadd_kid(t_tree **tree, t_tree *new);

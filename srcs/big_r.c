@@ -6,7 +6,7 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/07 10:39:13 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/07 10:50:38 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/07 18:43:59 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ static void	print_data(t_tree *tree, t_options *ops)
 	if ((dir = opendir((char *)tree->content)))
 	{
 		printf("opened %s\n", (char *)tree->content);
-		print_dir(dir, ops);
+		print_dir(dir, ops, (char *)tree->content);
 		closedir(dir);
 		printf("closed %s\n", (char *)tree->content);
 	}
