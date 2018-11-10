@@ -6,24 +6,24 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/07 10:36:58 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/07 10:37:07 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/09 18:41:41 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <sys/stat.h>
 #include "ft_ls.h"
 
 int		ft_get_fs_type(char *str)
 {
-	DIR	*dir;
+	struct stat buf;
 
-	if ((dir = opendir(str)) == NULL)
+	if (!lstat(str, &buf))
 	{
-		if (errno == ENOTDIR)
+		if (S_ISDIR(buf.st_mode))
 			return (1);
-		else if (errno == ENOENT)
+		else
 			return (2);
 	}
 	else
-		closedir(dir);
-	return (0);
+		return (0);
 }

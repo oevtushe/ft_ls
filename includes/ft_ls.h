@@ -6,7 +6,7 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/06 11:21:10 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/07 18:38:50 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/09 18:56:51 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,5 @@ int			ft_get_fs_type(char *str);
 
 void		ft_treeadd_kid(t_tree **tree, t_tree *new);
 t_tree		*ft_treenew(void *content, size_t content_size);
-int			ft_isdir(char *str);
-int			ft_isfile(char *str);
 
 #endif

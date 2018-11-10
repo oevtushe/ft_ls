@@ -6,7 +6,7 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/05 08:17:24 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/07 19:41:48 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/10 10:40:36 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,16 +16,26 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <grp.h>
+#include <unistd.h>
 #include <pwd.h>
 #include <time.h>
+#include <sys/xattr.h>
 #include "ft_ls.h"
 
-void	init_rights(struct stat *buf, char *rights)
+void	init_rights(struct stat *buf, char *rights, char *path)
 {
-	if (buf->st_mode & S_IFDIR)
+	if (S_ISDIR(buf->st_mode))
 		rights[0] = 'd';
-	else if ((buf->st_mode & S_IFLNK) == S_IFLNK)
+	else if (S_ISLNK(buf->st_mode))
 		rights[0] = 'l';
+	else if (S_ISFIFO(buf->st_mode))
+		rights[0] = 'p';
+	else if (S_ISBLK(buf->st_mode))
+		rights[0] = 'b';
+	else if (S_ISCHR(buf->st_mode))
+		rights[0] = 'c';
+	else if (S_ISSOCK(buf->st_mode))
+		rights[0] = 's';
 	else
 		rights[0] = '-';
 	if (buf->st_mode & S_IRUSR)
@@ -36,7 +46,11 @@ void	init_rights(struct stat *buf, char *rights)
 		rights[2] = 'w';
 	else
 		rights[2] = '-';
-	if (buf->st_mode & S_IXUSR)
+	if ((buf->st_mode & S_ISUID) && (buf->st_mode & S_IXUSR))
+		rights[3] = 's';
+	else if (buf->st_mode & S_ISUID)
+		rights[3] = 'S';
+	else if (buf->st_mode & S_IXUSR)
 		rights[3] = 'x';
 	else
 		rights[3] = '-';
@@ -49,7 +63,11 @@ void	init_rights(struct stat *buf, char *rights)
 		rights[5] = 'w';
 	else
 		rights[5] = '-';
-	if (buf->st_mode & S_IXGRP)
+	if ((buf->st_mode & S_ISGID) && (buf->st_mode & S_IXGRP))
+		rights[6] = 's';
+	else if (buf->st_mode & S_ISGID)
+		rights[6] = 'S';
+	else if (buf->st_mode & S_IXGRP)
 		rights[6] = 'x';
 	else
 		rights[6] = '-';
@@ -62,47 +80,127 @@ void	init_rights(struct stat *buf, char *rights)
 		rights[8] = 'w';
 	else
 		rights[8] = '-';
-	if (buf->st_mode & S_IXOTH)
+	if ((buf->st_mode & S_ISVTX) && (buf->st_mode & S_IXOTH))
+		rights[9] = 't';
+	else if (buf->st_mode & S_ISVTX)
+		rights[9] = 'T';
+	else if (buf->st_mode & S_IXOTH)
 		rights[9] = 'x';
 	else
 		rights[9] = '-';
+	if (listxattr(path, NULL, 0, XATTR_NOFOLLOW) > 0)
+		rights[10] = '@';
+	else
+		rights[10] = ' ';
 }
 
-void	handle_l(char *full_path, char *entry)
+int		ft_abs(int a)
 {
-	char			rights[11];
+	return (a >= 0 ? a : -a);
+}
+
+char	*build_mtime(struct stat *buf)
+{
+	char *ct;
+	char *tmp1;
+	char *tmp2;
+
+	ct = ctime(&buf->st_mtimespec.tv_sec);
+	// 15552000 -> 6 months in seconds
+	if (ft_abs(buf->st_mtimespec.tv_sec - time(NULL)) > 15552000)
+	{
+		tmp1 = ft_strsub(ct, 4, 7);
+		tmp2 = ft_strsub(ct, 20, 4);
+		ft_strconnect(&tmp1, tmp2, 1);
+		free(tmp2);
+	}
+	else
+		tmp1 = ft_strsub(ct, 4, 12);
+	return (tmp1);
+}
+
+char	*make_entry(char *path, char *entry)
+{
+	char	*tmp1;
+	char	*res;
+
+	tmp1 = ft_strnew(PATH_MAX);
+	if (readlink(path, tmp1, PATH_MAX) == -1)
+	{
+		perror(NULL);
+		exit(45);
+	}
+	res = ft_strjoin(entry, " -> ");
+	ft_strconnect(&res, tmp1, 1);
+	return (res);
+}
+
+long long int	handle_l(char *full_path, char *entry)
+{
+	char			rights[12];
 	struct stat		buf;
 	struct group	*gr;
 	struct passwd	*ps;
 	char			*ct;
-	char			*tmp;
+	char			*tmp1;
+	char			*tmp2;
+	char			*tmp3;
+	long long int	total;
 
-	rights[10] = 0;
-	if (!lstat(full_path, &buf))
+	rights[11] = 0;
+	total = 0;
+	if (!lstat(full_path, &buf) && (ps = getpwuid(buf.st_uid)))
 	{
-		gr = getgrgid(buf.st_gid);
-		ps = getpwuid(buf.st_uid);
-		init_rights(&buf, rights);
-		ct = ctime(&buf.st_mtimespec.tv_sec); //5-16
-		tmp = ft_strsub(ct, 4, 12);
-		printf("%s %d %s %s %lld %s %s\n", rights, buf.st_nlink,
-				ps->pw_name, gr->gr_name, buf.st_size, tmp, entry);
-		free(tmp);
-		// shouldn't free ct
+		init_rights(&buf, rights, full_path);
+		ct = build_mtime(&buf);
+		if (S_ISCHR(buf.st_mode))
+		{
+			tmp1 = ft_uitoabase_gen(major(buf.st_rdev), 0, 10);
+			ft_strconnect(&tmp1, ", ", 1);
+			tmp2 = ft_uitoabase_gen(minor(buf.st_rdev), 0, 10);
+			ft_strconnect(&tmp1, tmp2, 1);
+			free(tmp2);
+		}
+		else
+			tmp1 = ft_uitoabase_gen(buf.st_size, 0, 10);
+		if ((gr = getgrgid(buf.st_gid)))
+			printf("%s %d %s %s %s %s ", rights, buf.st_nlink,
+					ps->pw_name, gr->gr_name, tmp1, ct);
+		else
+			printf("%s %d %s %u %s %s ", rights, buf.st_nlink,
+					ps->pw_name, buf.st_gid, tmp1, ct);
+		if (S_ISLNK(buf.st_mode))
+		{
+			tmp3 = make_entry(full_path, entry);
+			printf("%s\n", tmp3);
+			free(tmp3);
+		}
+		else
+			printf("%s\n", entry);
+		free(ct);
+		free(tmp1);
+		total = buf.st_blocks;
 	}
 	else
 	{
 		perror(NULL);
+		exit(42);
 	}
+	return (total);
 }
 
 void	print_dir(DIR *dir, t_options *ops, char *cur_path)
 {
 	char			*full_path;
 	struct dirent	*runner;
+	struct stat		buf;
+	long long int	total;
 
+	total = 0;
 	while ((runner = readdir(dir)))
 	{
+		if (lstat(cur_path, &buf))
+			printf("Something went wrong\n");
 		/*
 		if (ops->a)
 			printf("%s\n", runner->d_name);
@@ -115,10 +213,11 @@ void	print_dir(DIR *dir, t_options *ops, char *cur_path)
 		{
 			full_path = ft_strjoin(cur_path, "/");
 			ft_strconnect(&full_path, runner->d_name, 1);
-			handle_l(full_path, runner->d_name);
+			total += handle_l(full_path, runner->d_name);
 			free(full_path);
 		}
 	}
+	printf("total %lld\n", total);
 }
 
 
@@ -175,8 +274,8 @@ void	init_files(t_list **files, int argc, char **argv)
 	i = 0;
 	while (i < argc)
 	{
-		if (ft_isfile(argv[i]))
-			ft_lstadd(files, ft_lstnew(argv[i], ft_strlen(argv[i])));
+		if (ft_get_fs_type(argv[i]) == 2)
+			ft_lstadd(files, ft_lstnew(argv[i], ft_strlen(argv[i]) + 1));
 		++i;
 	}
 }
@@ -188,8 +287,8 @@ void	init_dirs(t_list **dirs, int argc, char **argv)
 	i = 0;
 	while (i < argc)
 	{
-		if (ft_isdir(argv[i]))
-			ft_lstadd(dirs, ft_lstnew(argv[i], ft_strlen(argv[i])));
+		if (ft_get_fs_type(argv[i]) == 1)
+			ft_lstadd(dirs, ft_lstnew(argv[i], ft_strlen(argv[i]) + 1));
 		++i;
 	}
 }
@@ -201,7 +300,7 @@ void	check_for_garbage(int argc, char **argv)
 	i = 0;
 	while (i < argc)
 	{
-		if (ft_get_fs_type(argv[i]) == 2)
+		if (!ft_get_fs_type(argv[i]))
 			printf("ft_ls: %s: No such file or directory\n", argv[i]);
 		++i;
 	}

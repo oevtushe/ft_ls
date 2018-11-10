@@ -6,7 +6,7 @@
 #    By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/11/05 11:40:23 by oevtushe          #+#    #+#              #
-#    Updated: 2018/11/07 15:33:48 by oevtushe         ###   ########.fr        #
+#    Updated: 2018/11/09 18:57:04 by oevtushe         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -25,8 +25,6 @@ LS_SRCF						:=	main.c				\
 								big_r.c				\
 								ft_treeadd_kid.c	\
 								ft_get_fs_type.c	\
-								ft_isfile.c			\
-								ft_isdir.c			\
 								ft_treenew.c
 
 LS_SRCS						:= $(LS_SRCF:%=$(LS_SRCS_DIR)/%)
