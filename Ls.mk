@@ -6,7 +6,7 @@
 #    By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/11/05 11:40:23 by oevtushe          #+#    #+#              #
-#    Updated: 2018/11/09 18:57:04 by oevtushe         ###   ########.fr        #
+#    Updated: 2018/11/10 10:56:10 by oevtushe         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,6 +23,8 @@ LS_NAME						:= ft_ls
 
 LS_SRCF						:=	main.c				\
 								big_r.c				\
+								handle_l.c			\
+								ft_abs.c			\
 								ft_treeadd_kid.c	\
 								ft_get_fs_type.c	\
 								ft_treenew.c

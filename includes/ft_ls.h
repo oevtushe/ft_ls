@@ -6,7 +6,7 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/06 11:21:10 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/09 18:56:51 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/10 10:55:52 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,9 +34,11 @@ typedef struct			s_options
 	int					l;
 }						t_options;
 
+long long int	handle_l(char *full_path, char *entry);
 void		big_r(t_list *dirs, t_options *ops);
 void		print_dir(DIR *dir, t_options *ops, char *cur_path);
 int			ft_get_fs_type(char *str);
+int			ft_abs(int a);
 
 void		ft_treeadd_kid(t_tree **tree, t_tree *new);
 t_tree		*ft_treenew(void *content, size_t content_size);
