@@ -6,7 +6,7 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/05 08:17:24 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/10 11:28:07 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/12 15:50:03 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,31 +25,48 @@ void	print_dir(DIR *dir, t_options *ops, char *cur_path)
 {
 	char			*full_path;
 	struct dirent	*runner;
-	struct stat		buf;
 	long long int	total;
+	t_list			*data;
+	struct stat		buf;
+	char			*tmp1;
 
 	total = 0;
+	data = NULL;
+	tmp1 = ft_strjoin(cur_path, "/");
 	while ((runner = readdir(dir)))
 	{
-		if (lstat(cur_path, &buf))
-			printf("Something went wrong\n");
-		/*
-		if (ops->a)
-			printf("%s\n", runner->d_name);
-			*/
-		/*
-		else if (runner->d_name[0] != '.')
-			printf("%s\n", runner->d_name);
-			*/
+		full_path = ft_strjoin(tmp1, runner->d_name);
+		if (lstat(full_path, &buf))
+		{
+			perror(NULL);
+			exit(100);
+		}
 		if (ops->l && (runner->d_name[0] != '.' || ops->a))
 		{
-			full_path = ft_strjoin(cur_path, "/");
-			ft_strconnect(&full_path, runner->d_name, 1);
-			total += handle_l(full_path, runner->d_name);
-			free(full_path);
+			total += buf.st_blocks;
+			ft_lstadd(&data, ft_lstnew(runner->d_name, ft_strlen(runner->d_name) + 1));
 		}
+		else if (ops->a)
+			ft_lstadd(&data, ft_lstnew(runner->d_name, ft_strlen(runner->d_name) + 1));
+		else if (runner->d_name[0] != '.')
+			ft_lstadd(&data, ft_lstnew(runner->d_name, ft_strlen(runner->d_name) + 1));
+		free(full_path);
 	}
-	printf("total %lld\n", total);
+	if (ops->l && data)
+		printf("total %lld\n", total);
+	ft_qslist(&data, cmp_strs);
+	while (data)
+	{
+		full_path = ft_strjoin(tmp1, (char *)data->content);
+		if (ops->l)
+			handle_l(full_path, (char *)data->content);
+		else if (ops->a)
+			printf("%s\n", (char *)data->content);
+		else
+			printf("%s\n", (char *)data->content);
+		free(full_path);
+		data = data->next;
+	}
 }
 
 
@@ -76,28 +93,44 @@ int		set_option(void *container, char option)
 	return (0);
 }
 
+void	some_random_name(char *path, t_options *ops)
+{
+	DIR		*dir;
+	char	*tmp1;
+	char	*tmp2;
+
+	if ((dir = opendir(path)))
+	{
+		print_dir(dir, ops, path);
+		if (dir)
+			closedir(dir);
+	}
+	else
+	{
+		if ((tmp2 = ft_strrchr(path, '/')))
+			tmp1 = ft_strjoin("ft_ls: ", tmp2 + 1);
+		else
+			tmp1 = ft_strjoin("ft_ls: ", path);
+		perror(tmp1);
+		free(tmp1);
+	}
+}
+
 void	list_it(t_options *ops, t_list *dirs, int fl_not_empty)
 {
-	DIR	*dir;
-	int	pit;
+	int		fst;
 
-	pit = (fl_not_empty || (dirs && dirs->next)) ? 1 : 0;
+	fst = 1;
 	while (dirs)
 	{
-		if ((dir = opendir((char *)dirs->content)))
+		if (fl_not_empty && fst)
 		{
-			if (pit)
-				printf("%s:\n", (char *)dirs->content);
-			print_dir(dir, ops, (char *)dirs->content);
-			if (dir)
-				closedir(dir);
+			printf("%s:\n", (char *)dirs->content);
+			fst = 0;
 		}
-		else
-		{
-			printf("CAN'T OPEN !\n");
-			exit(100); ///////////
-		}
-		printf("\n");
+		else if (fl_not_empty)
+			printf("\n%s:\n", (char *)dirs->content);
+		some_random_name((char *)dirs->content, ops);
 		dirs = dirs->next;
 	}
 }
@@ -130,13 +163,19 @@ void	init_dirs(t_list **dirs, int argc, char **argv)
 
 void	check_for_garbage(int argc, char **argv)
 {
+	size_t	len;
+	char	*tmp;
 	int	i;
 
 	i = 0;
 	while (i < argc)
 	{
 		if (!ft_get_fs_type(argv[i]))
-			printf("ft_ls: %s: No such file or directory\n", argv[i]);
+		{
+			tmp = ft_format("ft_ls: %s: No such file or directory\n", &len, argv[i]);
+			ft_putstr_fd(tmp, 2);
+			free(tmp);
+		}
 		++i;
 	}
 }
@@ -157,6 +196,16 @@ void	ft_delbasic(void *content, size_t content_size)
 {
 	content_size = 0;
 	free(content);
+}
+
+int	cmp_strs(void *a, void *b)
+{
+	char *fst;
+	char *scd;
+
+	fst = (char *)a;
+	scd = (char *)b;
+	return (ft_strcmp(fst, scd));
 }
 
 int		main(int argc, char **argv)
@@ -193,12 +242,14 @@ int		main(int argc, char **argv)
 	init_files(&files, argc - pos.y - 1, &argv[pos.y + 1]);
 	init_dirs(&dirs, argc - pos.y - 1, &argv[pos.y + 1]);
 	check_for_garbage(argc - pos.y - 1, &argv[pos.y + 1]);
+	ft_qslist(&files, cmp_strs);
 	print_files(files, &ops);
-	// Do something with files
+	if (dirs && dirs->next)
+		ft_qslist(&dirs, cmp_strs);
 	if (ops.ur)
 		big_r(dirs, &ops);
 	else
-		list_it(&ops, dirs, (files && files->next) ? 1 : 0);
+		list_it(&ops, dirs, (pos.y + 1 < argc - 1) ? 1 : 0);
 	ft_lstdel(&dirs, ft_delbasic);
 	ft_lstdel(&files, ft_delbasic);
 	return (0);
