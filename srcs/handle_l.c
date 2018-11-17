@@ -6,7 +6,7 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/10 10:51:25 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/17 19:51:19 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/17 21:20:22 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,6 +128,8 @@ static char	*make_entry(char *path, char *entry, int size)
 	return (res);
 }
 
+//void	handle_char
+
 void	handle_l(char *full_path, char *entry)
 {
 	char			rights[12];
@@ -144,7 +146,7 @@ void	handle_l(char *full_path, char *entry)
 	{
 		init_rights(&buf, rights, full_path);
 		ct = build_mtime(&buf);
-		if (S_ISCHR(buf.st_mode))
+		if (S_ISCHR(buf.st_mode) || S_ISBLK(buf.st_mode))
 		{
 			tmp1 = ft_uitoabase_gen(major(buf.st_rdev), 0, 10);
 			ft_strconnect(&tmp1, ", ", 1);
