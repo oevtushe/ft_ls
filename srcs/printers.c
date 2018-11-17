@@ -6,7 +6,7 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/13 19:02:49 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/17 19:48:34 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/17 21:17:04 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,17 +14,15 @@
 #include <stdlib.h>
 #include "ft_ls.h"
 
-static void	print_dir_hlp(DIR *dir, t_options *ops, char *cur_path)
+static t_list	*mk_list(DIR *dir, long long int *total,
+		char *cur_path, t_options *ops)
 {
+	t_list			*data;
+	char			*tmp1;
 	char			*full_path;
 	struct dirent	*runner;
-	long long int	total;
-	t_list			*data;
-	t_list			*tmp2;
 	struct stat		buf;
-	char			*tmp1;
 
-	total = 0;
 	data = NULL;
 	tmp1 = ft_strjoin(cur_path, "/");
 	while ((runner = readdir(dir)))
@@ -36,12 +34,24 @@ static void	print_dir_hlp(DIR *dir, t_options *ops, char *cur_path)
 			exit(100);
 		}
 		if (ops->l && (ops->a || runner->d_name[0] != '.'))
-			total += buf.st_blocks;
+			*total += buf.st_blocks;
 		if (ops->a || runner->d_name[0] != '.')
 			ft_lstadd(&data, ft_lstnew_cc(ft_entrynew(
 							runner->d_name, full_path), sizeof(t_entry)));
 		free(full_path);
 	}
+	free(tmp1);
+	return (data);
+}
+
+static void	print_dir_hlp(DIR *dir, t_options *ops, char *cur_path)
+{
+	long long int	total;
+	t_list			*data;
+	t_list			*tmp2;
+
+	total = 0;
+	data = mk_list(dir, &total, cur_path, ops);
 	if (ops->l && data)
 		printf("total %lld\n", total);
 	sort_list(ops, &data);
@@ -49,12 +59,12 @@ static void	print_dir_hlp(DIR *dir, t_options *ops, char *cur_path)
 	while (data)
 	{
 		if (ops->l)
-			handle_l(((t_entry *)data->content)->full_path, ((t_entry *)data->content)->name);
+			handle_l(((t_entry *)data->content)->full_path,
+				((t_entry *)data->content)->name);
 		else
 			printf("%s\n", ((t_entry *)data->content)->name);
 		data = data->next;
 	}
-	free(tmp1);
 	ft_lstdel(&tmp2, delentry);
 }
 
