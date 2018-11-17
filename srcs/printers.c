@@ -6,7 +6,7 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/13 19:02:49 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/13 21:35:33 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/17 19:48:34 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ static void	print_dir_hlp(DIR *dir, t_options *ops, char *cur_path)
 	struct dirent	*runner;
 	long long int	total;
 	t_list			*data;
+	t_list			*tmp2;
 	struct stat		buf;
 	char			*tmp1;
 
@@ -44,6 +45,7 @@ static void	print_dir_hlp(DIR *dir, t_options *ops, char *cur_path)
 	if (ops->l && data)
 		printf("total %lld\n", total);
 	sort_list(ops, &data);
+	tmp2 = data;
 	while (data)
 	{
 		if (ops->l)
@@ -53,6 +55,7 @@ static void	print_dir_hlp(DIR *dir, t_options *ops, char *cur_path)
 		data = data->next;
 	}
 	free(tmp1);
+	ft_lstdel(&tmp2, delentry);
 }
 
 void		print_dir(char *path, t_options *ops)

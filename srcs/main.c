@@ -6,7 +6,7 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/05 08:17:24 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/15 14:34:40 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/17 20:23:19 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,7 +126,7 @@ int		main(int argc, char **argv)
 	ft_bzero((void *)&ops, sizeof(t_options));
 	pos = ft_argsparser_ti(&argv[1], &vld, (void*)&ops, set_option);
 	if (vld == 1 || ((pos.y >= argc - 1) && vld == 3))
-		ft_lstadd(&dirs, ft_lstnew(ft_entrynew(".", "."), sizeof(t_entry)));
+		ft_lstadd(&dirs, ft_lstnew_cc(ft_entrynew(".", "."), sizeof(t_entry)));
 	else if (vld == 0)
 	{
 		if (vld == 0)

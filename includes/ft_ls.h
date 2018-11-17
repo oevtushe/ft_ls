@@ -6,7 +6,7 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/06 11:21:10 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/15 14:31:00 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/17 20:05:39 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,4 +67,8 @@ void		ft_treeleveldel(t_tree **tree, void (*del)(void*, size_t));
 size_t		ft_treelevellen(const t_tree *tree);
 
 t_entry		*ft_entrynew(char *name, char *full_path);
+void		delentry(void *content, size_t content_size);
+void		ft_treedel(t_tree **tree, void (*del)(void *content, size_t content_size));
+t_tree		*ft_treenew_spec(void *content, size_t content_size,
+				void *(*dup_content)(void *content));
 #endif

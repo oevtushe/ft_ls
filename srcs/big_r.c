@@ -6,7 +6,7 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/07 10:39:13 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/13 21:27:39 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/17 20:05:55 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,19 @@ static void	build_tree(t_options *ops, t_tree *level)
 	}
 }
 
+// consider null
+void	*dup_content(void *content)
+{
+	t_entry *ent;
+	t_entry *new;
+
+	new = ft_memalloc(sizeof(t_entry));
+	ent = (t_entry *)content;
+	new->name = ft_strdup(ent->name);
+	new->full_path = ft_strdup(ent->full_path);
+	return (new);
+}
+
 void	big_r(t_list *dirs, t_options *ops, int files_not_empty)
 {
 	int		one_time;
@@ -90,10 +103,11 @@ void	big_r(t_list *dirs, t_options *ops, int files_not_empty)
 		printf("%s:\n", ent->full_path);
 	while (dirs)
 	{
-		tree = ft_treenew(dirs->content, sizeof(t_entry));
+		tree = ft_treenew_spec(dirs->content, sizeof(t_entry), dup_content);
 		build_tree(ops, tree);
 		inorder_tree_traversal(tree, ops, one_time);
 		dirs = dirs->next;
 		one_time = 0;
+		ft_treedel(&tree, delentry);
 	}
 }

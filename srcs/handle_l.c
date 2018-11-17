@@ -6,7 +6,7 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/10 10:51:25 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/12 13:38:54 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/17 19:51:19 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,6 +124,7 @@ static char	*make_entry(char *path, char *entry, int size)
 	}
 	res = ft_strjoin(entry, " -> ");
 	ft_strconnect(&res, tmp1, 1);
+	free(tmp1);
 	return (res);
 }
 

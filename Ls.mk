@@ -6,7 +6,7 @@
 #    By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/11/05 11:40:23 by oevtushe          #+#    #+#              #
-#    Updated: 2018/11/15 14:31:02 by oevtushe         ###   ########.fr        #
+#    Updated: 2018/11/17 20:04:53 by oevtushe         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,6 +39,8 @@ LS_SRCF						:=	main.c						\
 								sort_entry_comparators.c	\
 								printers.c					\
 								sort_data.c					\
+								ft_treedel.c				\
+								ft_treenew_spec.c			\
 								ft_treenew.c
 
 LS_DEPF						:= ft_ls.h

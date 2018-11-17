@@ -1,33 +1,33 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_qstreelevel.c                                   :+:      :+:    :+:   */
+/*   ft_treedel.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/11/10 16:48:07 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/17 19:43:58 by oevtushe         ###   ########.fr       */
+/*   Created: 2018/11/15 14:46:41 by oevtushe          #+#    #+#             */
+/*   Updated: 2018/11/17 19:45:01 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
 #include "ft_ls.h"
 
-static void del_simple(void *content, size_t content_size)
+void	ft_treedel(t_tree **tree, void (*del)(void *content, size_t content_size))
 {
-	content = NULL;
-	content_size = 0;
-}
+	t_entry *ent;
+	t_tree	*tmp;
 
-void		ft_qstreelevel(t_tree **tree, int (*cmp)(void *, void *))
-{
-	int		size;
-	void	**arr;
-
-	size = ft_treelevellen(*tree);
-	arr = ft_treeleveltoarr(*tree);
-	ft_qsarr(arr, 0, size - 1, cmp);
-	ft_treeleveldel(tree, del_simple);
-	*tree = ft_arrtotreelevel(arr, size);
-	free(arr);
+	if (tree)
+	{
+		while (*tree)
+		{
+			ent = (t_entry *)(*tree)->content;
+			ft_treedel(&(*tree)->kids, del);
+			del((*tree)->content, (*tree)->content_size);
+			tmp = *tree;
+			*tree = (*tree)->siblings;
+			free(tmp);
+		}
+	}
 }
