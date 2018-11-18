@@ -6,7 +6,7 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/10 10:51:25 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/17 21:20:22 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/18 13:04:52 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include "ft_ls.h"
 
-static void	init_rights(struct stat *buf, char *rights, char *path)
+static void	set_type(struct stat *buf, char *rights)
 {
 	if (S_ISDIR(buf->st_mode))
 		rights[0] = 'd';
@@ -35,6 +35,10 @@ static void	init_rights(struct stat *buf, char *rights, char *path)
 		rights[0] = 's';
 	else
 		rights[0] = '-';
+}
+
+static void set_user_rights(struct stat *buf, char *rights)
+{
 	if (buf->st_mode & S_IRUSR)
 		rights[1] = 'r';
 	else
@@ -51,7 +55,10 @@ static void	init_rights(struct stat *buf, char *rights, char *path)
 		rights[3] = 'x';
 	else
 		rights[3] = '-';
-	////////////////////////////////
+}
+
+static void set_group_rights(struct stat *buf, char *rights)
+{
 	if (buf->st_mode & S_IRGRP)
 		rights[4] = 'r';
 	else
@@ -68,7 +75,10 @@ static void	init_rights(struct stat *buf, char *rights, char *path)
 		rights[6] = 'x';
 	else
 		rights[6] = '-';
-	////////////////////////////////
+}
+
+static void set_other_rights(struct stat *buf, char *rights, char *path)
+{
 	if (buf->st_mode & S_IROTH)
 		rights[7] = 'r';
 	else
@@ -89,6 +99,14 @@ static void	init_rights(struct stat *buf, char *rights, char *path)
 		rights[10] = '@';
 	else
 		rights[10] = ' ';
+}
+
+static void	init_rights(struct stat *buf, char *rights, char *path)
+{
+	set_type(buf, rights);
+	set_user_rights(buf, rights);
+	set_group_rights(buf, rights);
+	set_other_rights(buf, rights, path);
 }
 
 static char	*build_mtime(struct stat *buf)
@@ -128,49 +146,63 @@ static char	*make_entry(char *path, char *entry, int size)
 	return (res);
 }
 
-//void	handle_char
+char	*handle_block_char_dev(struct stat *buf)
+{
+	char *tmp1;
+	char *tmp2;
+
+	tmp1 = ft_uitoabase_gen(major(buf->st_rdev), 0, 10);
+	ft_strconnect(&tmp1, ", ", 1);
+	tmp2 = ft_uitoabase_gen(minor(buf->st_rdev), 0, 10);
+	ft_strconnect(&tmp1, tmp2, 1);
+	free(tmp2);
+	return (tmp1);
+}
+
+static void help2(struct stat *buf, struct passwd *ps, char *tmp1, char *rights)
+{
+	struct group	*gr;
+	char			*ct;
+
+	ct = build_mtime(buf);
+	if ((gr = getgrgid(buf->st_gid)))
+		ft_printf("%s %d %s %s %s %s ", rights, buf->st_nlink,
+				ps->pw_name, gr->gr_name, tmp1, ct);
+	else
+		ft_printf("%s %d %s %u %s %s ", rights, buf->st_nlink,
+				ps->pw_name, buf->st_gid, tmp1, ct);
+	free(ct);
+}
+
+static void handle_link(char *full_path, char *entry, struct stat *buf)
+{
+	char *tmp3;
+
+	tmp3 = make_entry(full_path, entry, buf->st_size);
+	ft_printf("%s\n", tmp3);
+	free(tmp3);
+}
 
 void	handle_l(char *full_path, char *entry)
 {
 	char			rights[12];
 	struct stat		buf;
-	struct group	*gr;
 	struct passwd	*ps;
-	char			*ct;
 	char			*tmp1;
-	char			*tmp2;
-	char			*tmp3;
 
 	rights[11] = 0;
 	if (!lstat(full_path, &buf) && (ps = getpwuid(buf.st_uid)))
 	{
 		init_rights(&buf, rights, full_path);
-		ct = build_mtime(&buf);
 		if (S_ISCHR(buf.st_mode) || S_ISBLK(buf.st_mode))
-		{
-			tmp1 = ft_uitoabase_gen(major(buf.st_rdev), 0, 10);
-			ft_strconnect(&tmp1, ", ", 1);
-			tmp2 = ft_uitoabase_gen(minor(buf.st_rdev), 0, 10);
-			ft_strconnect(&tmp1, tmp2, 1);
-			free(tmp2);
-		}
+			tmp1 = handle_block_char_dev(&buf);
 		else
 			tmp1 = ft_uitoabase_gen(buf.st_size, 0, 10);
-		if ((gr = getgrgid(buf.st_gid)))
-			printf("%s %d %s %s %s %s ", rights, buf.st_nlink,
-					ps->pw_name, gr->gr_name, tmp1, ct);
-		else
-			printf("%s %d %s %u %s %s ", rights, buf.st_nlink,
-					ps->pw_name, buf.st_gid, tmp1, ct);
+		help2(&buf, ps, tmp1, rights);
 		if (S_ISLNK(buf.st_mode))
-		{
-			tmp3 = make_entry(full_path, entry, buf.st_size);
-			printf("%s\n", tmp3);
-			free(tmp3);
-		}
+			handle_link(full_path, entry, &buf);
 		else
-			printf("%s\n", entry);
-		free(ct);
+			ft_printf("%s\n", entry);
 		free(tmp1);
 	}
 	else

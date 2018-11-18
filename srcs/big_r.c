@@ -6,7 +6,7 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/07 10:39:13 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/17 20:05:55 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/18 13:08:14 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ static void	inorder_tree_traversal(t_tree *level, t_options *ops, int first_time
 	{
 		ent = (t_entry *)level->content;
 		if (!first_time)
-			printf("\n%s:\n", ent->full_path);
+			ft_printf("\n%s:\n", ent->full_path);
 		print_dir(ent->full_path, ops);
 		inorder_tree_traversal(level->kids, ops, 0);
 		level = level->siblings;
@@ -39,34 +39,41 @@ static void	sort_tree_level(t_options *ops, t_tree **level)
 		ft_qstreelevel(level, cmp_entries);
 }
 
+static void make_kids(DIR *dir, t_options *ops, t_tree **level)
+{
+	struct dirent	*runner;
+	char			*new_path;
+	t_entry			*ent;
+
+	ent = (t_entry *)(*level)->content;
+	while ((runner = readdir(dir)))
+	{
+		if (runner->d_type == DT_DIR && (runner->d_name[0] != '.' ||
+					(ops->a && runner->d_namlen > 1
+					 	&& runner->d_name[1] != '.')))
+		{
+			if (ft_strlen(ent->name) == 1 && (ent->name[0] == '/'))
+				new_path = ft_strjoin(ent->full_path, "");
+			else
+				new_path = ft_strjoin(ent->full_path, "/");
+			ft_strconnect(&new_path, runner->d_name, 1);
+			ft_treeadd_kid(level,
+					ft_treenew_cc(ft_entrynew(runner->d_name,
+							new_path), sizeof(t_entry)));
+			ft_strdel(&new_path);
+		}
+	}
+}
+
 static void	build_tree(t_options *ops, t_tree *level)
 {
 	DIR				*dir;
-	char			*new_path;
-	struct dirent	*runner;
-	t_entry			*ent;
 
 	while (level)
 	{
-		ent = (t_entry *)level->content;
-		if ((dir = opendir(ent->full_path)))
+		if ((dir = opendir(((t_entry *)level->content)->full_path)))
 		{
-			while ((runner = readdir(dir)))
-			{
-				if (runner->d_type == DT_DIR && (runner->d_name[0] != '.' ||
-							(ops->a && runner->d_namlen > 1 && runner->d_name[1] != '.')))
-				{
-					if (ft_strlen(ent->name) == 1 && (ent->name[0] == '/'))
-						new_path = ft_strjoin(ent->full_path, "");
-					else
-						new_path = ft_strjoin(ent->full_path, "/");
-					ft_strconnect(&new_path, runner->d_name, 1);
-					ft_treeadd_kid(&level,
-							ft_treenew_cc(ft_entrynew(runner->d_name,
-									new_path), sizeof(t_entry)));
-					ft_strdel(&new_path);
-				}
-			}
+			make_kids(dir, ops, &level);
 			if (dir)
 				closedir(dir);
 		}
@@ -98,9 +105,9 @@ void	big_r(t_list *dirs, t_options *ops, int files_not_empty)
 	one_time = 1;
 	ent = (t_entry *)dirs->content;
 	if (files_not_empty && dirs)
-		printf("\n%s:\n", ent->full_path);
+		ft_printf("\n%s:\n", ent->full_path);
 	else if (dirs && dirs->next)
-		printf("%s:\n", ent->full_path);
+		ft_printf("%s:\n", ent->full_path);
 	while (dirs)
 	{
 		tree = ft_treenew_spec(dirs->content, sizeof(t_entry), dup_content);

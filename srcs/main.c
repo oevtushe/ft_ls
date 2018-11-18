@@ -6,7 +6,7 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/05 08:17:24 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/17 20:23:19 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/18 13:07:15 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,15 +46,15 @@ int		set_option(void *container, char option)
 void	basic_outp(t_options *ops, t_list *dirs, int fl_not_empty, int files_not_empty)
 {
 	if (dirs && files_not_empty)
-		printf("\n%s:\n", ((t_entry *)dirs->content)->full_path);
+		ft_printf("\n%s:\n", ((t_entry *)dirs->content)->full_path);
 	else if (dirs && fl_not_empty)
-		printf("%s:\n", ((t_entry *)dirs->content)->full_path);
+		ft_printf("%s:\n", ((t_entry *)dirs->content)->full_path);
 	while (dirs)
 	{
 		print_dir(((t_entry *)dirs->content)->full_path, ops);
 		dirs = dirs->next;
 		if (fl_not_empty && dirs)
-			printf("\n%s:\n", ((t_entry *)dirs->content)->full_path);
+			ft_printf("\n%s:\n", ((t_entry *)dirs->content)->full_path);
 	}
 }
 
@@ -111,37 +111,48 @@ void	delentry(void *content, size_t content_size)
 	free(ent);
 }
 
+int		parse_args(int argc, char **argv, t_options *ops, t_pos *pos)
+{
+	int			vld;
+	char		*tmp;
+	size_t		sz;
+
+	vld = argc - 1;
+	ft_bzero(ops, sizeof(t_options));
+	*pos = ft_argsparser_ti(&argv[1], &vld, (void*)ops, set_option);
+	if (vld == 0)
+	{
+		if (vld == 0)
+		{
+			tmp = ft_format("ft_ls: illegal option -- %c\n", &sz,
+					argv[pos->y + 1][pos->x]);
+			ft_putstr_fd(tmp, 2);
+			exit(42);
+		}
+		else
+		{
+			tmp = ft_strjoin("ft_ls: ", argv[pos->y + 1]);
+			perror(tmp);
+			free(tmp);
+			exit(43);
+		}
+	}
+	return (vld);
+}
+
 int		main(int argc, char **argv)
 {
-	char			*tmp;
 	t_options		ops;
 	t_pos			pos;
 	int				vld;
 	t_list			*files;
 	t_list			*dirs;
 
-	vld = argc - 1;
-	files = NULL;
 	dirs = NULL;
-	ft_bzero((void *)&ops, sizeof(t_options));
-	pos = ft_argsparser_ti(&argv[1], &vld, (void*)&ops, set_option);
+	files = NULL;
+	vld = parse_args(argc, argv, &ops, &pos);
 	if (vld == 1 || ((pos.y >= argc - 1) && vld == 3))
 		ft_lstadd(&dirs, ft_lstnew_cc(ft_entrynew(".", "."), sizeof(t_entry)));
-	else if (vld == 0)
-	{
-		if (vld == 0)
-		{
-			printf("ft_ls: illegal option -- %c\n", argv[pos.y + 1][pos.x]);
-			return (42);
-		}
-		else
-		{
-			tmp = ft_strjoin("ft_ls: ", argv[pos.y + 1]);
-			perror(tmp);
-			free(tmp);
-			return (43);
-		}
-	}
 	init_lists(&dirs, &files, argc - pos.y - 1, &argv[pos.y + 1], &ops);
 	if (files && files->next)
 		sort_list(&ops, &files);
@@ -152,8 +163,7 @@ int		main(int argc, char **argv)
 	if (ops.ur && dirs)
 		big_r(dirs, &ops, files ? 1 : 0);
 	else if (dirs || files)
-		basic_outp(&ops, dirs,
-				(pos.y + 1 < argc - 1) ? 1 : 0, files ? 1 : 0);
+		basic_outp(&ops, dirs, (pos.y + 1 < argc - 1) ? 1 : 0, files ? 1 : 0);
 	ft_lstdel(&dirs, delentry);
 	ft_lstdel(&files, delentry);
 	return (0);

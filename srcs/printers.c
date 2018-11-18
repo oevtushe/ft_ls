@@ -6,7 +6,7 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/13 19:02:49 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/17 21:17:04 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/18 13:09:16 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ static void	print_dir_hlp(DIR *dir, t_options *ops, char *cur_path)
 	total = 0;
 	data = mk_list(dir, &total, cur_path, ops);
 	if (ops->l && data)
-		printf("total %lld\n", total);
+		ft_printf("total %lld\n", total);
 	sort_list(ops, &data);
 	tmp2 = data;
 	while (data)
@@ -62,7 +62,7 @@ static void	print_dir_hlp(DIR *dir, t_options *ops, char *cur_path)
 			handle_l(((t_entry *)data->content)->full_path,
 				((t_entry *)data->content)->name);
 		else
-			printf("%s\n", ((t_entry *)data->content)->name);
+			ft_printf("%s\n", ((t_entry *)data->content)->name);
 		data = data->next;
 	}
 	ft_lstdel(&tmp2, delentry);
@@ -101,7 +101,7 @@ void	print_files(t_list *files, t_options *ops)
 		if (ops->l)
 			handle_l(cur->full_path, cur->full_path);
 		else
-			printf("%s\n", cur->full_path);
+			ft_printf("%s\n", cur->full_path);
 		files = files->next;
 	}
 }
