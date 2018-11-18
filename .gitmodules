@@ -1,0 +1,6 @@
+[submodule "srcs/libft"]
+	path = srcs/libft
+	url = https://github.com/oevtushe/libft.git
+[submodule "srcs/ft_printf"]
+	path = srcs/ft_printf
+	url = https://github.com/oevtushe/ft_printf.git
