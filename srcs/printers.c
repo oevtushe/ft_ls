@@ -6,10 +6,12 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/13 19:02:49 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/18 13:09:16 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/18 14:12:17 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <stdio.h>
+#include <dirent.h>
 #include <sys/stat.h>
 #include <stdlib.h>
 #include "ft_ls.h"
@@ -36,7 +38,7 @@ static t_list	*mk_list(DIR *dir, long long int *total,
 		if (ops->l && (ops->a || runner->d_name[0] != '.'))
 			*total += buf.st_blocks;
 		if (ops->a || runner->d_name[0] != '.')
-			ft_lstadd(&data, ft_lstnew_cc(ft_entrynew(
+			ft_lstadd(&data, ft_lstnew_cc(entrynew(
 							runner->d_name, full_path), sizeof(t_entry)));
 		free(full_path);
 	}
@@ -44,7 +46,7 @@ static t_list	*mk_list(DIR *dir, long long int *total,
 	return (data);
 }
 
-static void	print_dir_hlp(DIR *dir, t_options *ops, char *cur_path)
+static void		print_dir_hlp(DIR *dir, t_options *ops, char *cur_path)
 {
 	long long int	total;
 	t_list			*data;
@@ -68,7 +70,7 @@ static void	print_dir_hlp(DIR *dir, t_options *ops, char *cur_path)
 	ft_lstdel(&tmp2, delentry);
 }
 
-void		print_dir(char *path, t_options *ops)
+void			print_dir(char *path, t_options *ops)
 {
 	DIR		*dir;
 	char	*tmp1;
@@ -91,7 +93,7 @@ void		print_dir(char *path, t_options *ops)
 	}
 }
 
-void	print_files(t_list *files, t_options *ops)
+void			print_files(t_list *files, t_options *ops)
 {
 	t_entry *cur;
 

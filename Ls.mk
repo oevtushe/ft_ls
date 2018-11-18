@@ -6,7 +6,7 @@
 #    By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/11/05 11:40:23 by oevtushe          #+#    #+#              #
-#    Updated: 2018/11/17 20:04:53 by oevtushe         ###   ########.fr        #
+#    Updated: 2018/11/18 14:01:32 by oevtushe         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,27 +21,17 @@ include						$(FT_DIR)/Templates.mk
 include						$(FT_DIR)/Libft.mk
 include						$(FTP_DIR)/Libftp.mk
 
-LS_NAME						:= ft_ls
+LS_NAME						:=	ft_ls
 
 LS_SRCF						:=	main.c						\
 								big_r.c						\
 								handle_l.c					\
-								ft_qslist.c					\
-								ft_abs.c					\
-								ft_treeadd_kid.c			\
-								ft_qstreelevel.c			\
-								ft_arrtotreelevel.c			\
-								ft_treeleveldel.c			\
-								ft_treelevellen.c			\
-								ft_treenew_cc.c				\
-								ft_treeleveltoarr.c			\
-								ft_entrynew.c				\
+								entrynew.c					\
 								sort_entry_comparators.c	\
 								printers.c					\
-								sort_data.c					\
-								ft_treedel.c				\
-								ft_treenew_spec.c			\
-								ft_treenew.c
+								init_rights.c				\
+								helpers.c					\
+								sort_data.c
 
 LS_DEPF						:= ft_ls.h
 

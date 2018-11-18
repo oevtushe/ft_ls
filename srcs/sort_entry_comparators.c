@@ -6,7 +6,7 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/12 18:53:15 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/13 17:22:43 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/18 14:13:33 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,8 @@ int	cmp_rentries(void *a, void *b)
 
 int	cmp_entries_t(void *a, void *b)
 {
-	t_entry *fst;
-	t_entry *scd;
+	t_entry		*fst;
+	t_entry		*scd;
 	struct stat	buf1;
 	struct stat	buf2;
 
@@ -57,8 +57,8 @@ int	cmp_entries_t(void *a, void *b)
 
 int	cmp_rentries_t(void *a, void *b)
 {
-	t_entry *fst;
-	t_entry *scd;
+	t_entry		*fst;
+	t_entry		*scd;
 	struct stat	buf1;
 	struct stat	buf2;
 

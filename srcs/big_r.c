@@ -6,13 +6,15 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/07 10:39:13 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/18 13:08:14 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/18 14:10:28 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <dirent.h>
 #include "ft_ls.h"
 
-static void	inorder_tree_traversal(t_tree *level, t_options *ops, int first_time)
+static void	inorder_tree_traversal(t_tree *level,
+				t_options *ops, int first_time)
 {
 	t_entry *ent;
 
@@ -39,7 +41,7 @@ static void	sort_tree_level(t_options *ops, t_tree **level)
 		ft_qstreelevel(level, cmp_entries);
 }
 
-static void make_kids(DIR *dir, t_options *ops, t_tree **level)
+static void	make_kids(DIR *dir, t_options *ops, t_tree **level)
 {
 	struct dirent	*runner;
 	char			*new_path;
@@ -50,7 +52,7 @@ static void make_kids(DIR *dir, t_options *ops, t_tree **level)
 	{
 		if (runner->d_type == DT_DIR && (runner->d_name[0] != '.' ||
 					(ops->a && runner->d_namlen > 1
-					 	&& runner->d_name[1] != '.')))
+						&& runner->d_name[1] != '.')))
 		{
 			if (ft_strlen(ent->name) == 1 && (ent->name[0] == '/'))
 				new_path = ft_strjoin(ent->full_path, "");
@@ -58,7 +60,7 @@ static void make_kids(DIR *dir, t_options *ops, t_tree **level)
 				new_path = ft_strjoin(ent->full_path, "/");
 			ft_strconnect(&new_path, runner->d_name, 1);
 			ft_treeadd_kid(level,
-					ft_treenew_cc(ft_entrynew(runner->d_name,
+					ft_treenew_cc(entrynew(runner->d_name,
 							new_path), sizeof(t_entry)));
 			ft_strdel(&new_path);
 		}
@@ -83,20 +85,7 @@ static void	build_tree(t_options *ops, t_tree *level)
 	}
 }
 
-// consider null
-void	*dup_content(void *content)
-{
-	t_entry *ent;
-	t_entry *new;
-
-	new = ft_memalloc(sizeof(t_entry));
-	ent = (t_entry *)content;
-	new->name = ft_strdup(ent->name);
-	new->full_path = ft_strdup(ent->full_path);
-	return (new);
-}
-
-void	big_r(t_list *dirs, t_options *ops, int files_not_empty)
+void		big_r(t_list *dirs, t_options *ops, int files_not_empty)
 {
 	int		one_time;
 	t_tree	*tree;

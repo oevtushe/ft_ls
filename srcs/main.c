@@ -6,44 +6,16 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/05 08:17:24 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/18 13:07:15 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/18 14:08:47 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <dirent.h>
-#include <stdio.h> //
-#include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
-#include <grp.h>
-#include <unistd.h>
-#include <pwd.h>
-#include <time.h>
 #include "ft_ls.h"
 
-int		set_option(void *container, char option)
-{
-	int			*i;
-	t_options	*p;
-
-	i = NULL;
-	p = (t_options *)container;
-	if (option == 'a')
-		i = &p->a;
-	else if (option == 'R')
-		i = &p->ur;
-	else if (option == 'l')
-		i = &p->l;
-	else if (option == 'r')
-		i = &p->r;
-	else if (option == 't')
-		i = &p->t;
-	if (i)
-		*i = 1;
-	return (i ? 1 : 0);
-}
-
-void	basic_outp(t_options *ops, t_list *dirs, int fl_not_empty, int files_not_empty)
+static void	basic_outp(t_options *ops, t_list *dirs,
+		int fl_not_empty, int files_not_empty)
 {
 	if (dirs && files_not_empty)
 		ft_printf("\n%s:\n", ((t_entry *)dirs->content)->full_path);
@@ -58,24 +30,25 @@ void	basic_outp(t_options *ops, t_list *dirs, int fl_not_empty, int files_not_em
 	}
 }
 
-static void init_lists(t_list **dirs, t_list **files, int argc, char **argv, t_options *ops)
+static void	init_lists(t_list **dirs, t_list **files,
+		t_ar ar, t_options *ops)
 {
 	int			i;
 	mode_t		mode;
 	struct stat buf;
 
 	i = -1;
-	while (++i < argc)
+	while (++i < ar.argc)
 	{
-		if (!lstat(argv[i], &buf))
+		if (!lstat(ar.argv[i], &buf))
 		{
 			mode = buf.st_mode;
 			if (S_ISDIR(mode) || (S_ISLNK(mode) && !ops->l))
 				ft_lstadd(dirs, ft_lstnew_cc(
-							ft_entrynew(argv[i], argv[i]), sizeof(t_entry)));
+							entrynew(ar.argv[i], ar.argv[i]), sizeof(t_entry)));
 			else
 				ft_lstadd(files, ft_lstnew_cc(
-							ft_entrynew(argv[i], argv[i]), sizeof(t_entry)));
+							entrynew(ar.argv[i], ar.argv[i]), sizeof(t_entry)));
 		}
 	}
 }
@@ -92,7 +65,8 @@ static void	check_for_garbage(int argc, char **argv)
 	{
 		if (lstat(argv[i], &buf))
 		{
-			tmp = ft_format("ft_ls: %s: No such file or directory\n", &len, argv[i]);
+			tmp = ft_format("ft_ls: %s: No such file or directory\n",
+					&len, argv[i]);
 			ft_putstr_fd(tmp, 2);
 			free(tmp);
 		}
@@ -100,18 +74,7 @@ static void	check_for_garbage(int argc, char **argv)
 	}
 }
 
-void	delentry(void *content, size_t content_size)
-{
-	t_entry *ent;
-
-	content_size = 0;
-	ent = (t_entry *)content;
-	free(ent->name);
-	free(ent->full_path);
-	free(ent);
-}
-
-int		parse_args(int argc, char **argv, t_options *ops, t_pos *pos)
+static int	parse_args(int argc, char **argv, t_options *ops, t_pos *pos)
 {
 	int			vld;
 	char		*tmp;
@@ -140,7 +103,7 @@ int		parse_args(int argc, char **argv, t_options *ops, t_pos *pos)
 	return (vld);
 }
 
-int		main(int argc, char **argv)
+int			main(int argc, char **argv)
 {
 	t_options		ops;
 	t_pos			pos;
@@ -152,8 +115,8 @@ int		main(int argc, char **argv)
 	files = NULL;
 	vld = parse_args(argc, argv, &ops, &pos);
 	if (vld == 1 || ((pos.y >= argc - 1) && vld == 3))
-		ft_lstadd(&dirs, ft_lstnew_cc(ft_entrynew(".", "."), sizeof(t_entry)));
-	init_lists(&dirs, &files, argc - pos.y - 1, &argv[pos.y + 1], &ops);
+		ft_lstadd(&dirs, ft_lstnew_cc(entrynew(".", "."), sizeof(t_entry)));
+	init_lists(&dirs, &files, (t_ar){argc - pos.y - 1, &argv[pos.y + 1]}, &ops);
 	if (files && files->next)
 		sort_list(&ops, &files);
 	if (dirs && dirs->next)

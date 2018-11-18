@@ -1,30 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_treeleveldel.c                                  :+:      :+:    :+:   */
+/*   entrynew.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/11/10 16:54:26 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/10 16:56:02 by oevtushe         ###   ########.fr       */
+/*   Created: 2018/11/18 13:37:54 by oevtushe          #+#    #+#             */
+/*   Updated: 2018/11/18 13:37:59 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_ls.h"
 #include <stdlib.h>
+#include "ft_ls.h"
 
-void	ft_treeleveldel(t_tree **tree, void (*del)(void*, size_t))
+t_entry	*entrynew(char *name, char *full_path)
 {
-	t_tree *tmp;
+	t_entry *entry;
 
-	if (tree && del)
+	entry = (t_entry *)malloc(sizeof(t_entry));
+	if (entry)
 	{
-		while (*tree)
-		{
-			tmp = *tree;
-			*tree = (*tree)->siblings;
-			del(tmp->content, tmp->content_size);
-			ft_memdel((void **)&tmp);
-		}
+		entry->name = ft_strdup(name);
+		entry->full_path = ft_strdup(full_path);
 	}
+	return (entry);
 }
