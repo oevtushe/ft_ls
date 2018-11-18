@@ -6,7 +6,7 @@
 /*   By: oevtushe <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/10 10:51:25 by oevtushe          #+#    #+#             */
-/*   Updated: 2018/11/18 14:10:57 by oevtushe         ###   ########.fr       */
+/*   Updated: 2018/11/18 15:09:30 by oevtushe         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ static char	*build_mtime(struct stat *buf)
 	char *tmp2;
 
 	ct = ctime(&buf->st_mtimespec.tv_sec);
-	if (ft_abs(buf->st_mtimespec.tv_sec - time(NULL)) > 15552000)
+	if (ft_abs(time(NULL) - buf->st_mtimespec.tv_sec) > 15552000)
 	{
 		tmp1 = ft_strsub(ct, 4, 7);
 		tmp2 = ft_strsub(ct, 20, 4);
